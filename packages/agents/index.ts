@@ -1,3 +1,5 @@
-import main from "./gemini/index"
+import gemini_node from "./gemini";
+import openai_node from "./openai";
+import openrouter_node from "./openrouter";
 
-main("generate report go vs rust vs other low levels");
+export { gemini_node, openai_node, openrouter_node };
