@@ -1,0 +1,169 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String        @id @default(uuid())
+  email       String        @unique
+  password    String
+  name        String?
+
+  nodes       Node[]
+  workflows   Workflow[]
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model Node {
+  id            String        @id @default(uuid())
+  label         String?
+  name          String?
+  description   String?
+
+  type          Provider
+  config        Json
+  positionX     Float         @default(0)
+  positionY     Float         @default(0)
+
+  connections   Json
+
+  status        Status        @default(idle)
+  workflowId    String
+  workflow      Workflow      @relation(fields: [workflowId], references: [id])
+
+  userId        String
+  user          User          @relation(fields: [userId], references: [id])
+
+  nodeExecutions NodeExecution[]
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([workflowId])
+  @@index([userId])
+}
+
+model Workflow {
+  id                 String              @id @default(uuid())
+  name               String?
+  description        String?
+
+  status             WorkflowStatus      @default(draft)
+  triggerType        TriggerType         @default(manual)
+  triggerConfig      Json?
+  retryCount         Int                 @default(3)
+  timeoutMs          Int                 @default(300000)
+  parallelExecution  Boolean             @default(false)
+
+  userId             String
+  user               User                @relation(fields: [userId], references: [id])
+
+  totalRuns          Int                 @default(0)
+  successfulRuns     Int                 @default(0)
+  failedRuns         Int                 @default(0)
+  lastRun            DateTime?
+  
+  nodes              Node[]
+  executions         WorkflowExecution[]
+
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  @@index([userId])
+}
+
+model WorkflowExecution {
+  id            String                   @id @default(uuid())
+  workflowId    String
+  workflow      Workflow                 @relation(fields: [workflowId], references: [id])
+
+  status        ExecutionStatus
+  startedAt     DateTime                 @default(now())
+  completedAt   DateTime?
+  error         String?
+
+  nodeExecutions NodeExecution[]
+
+  createdAt     DateTime                 @default(now())
+  updatedAt     DateTime                 @updatedAt
+
+  @@index([workflowId])
+}
+
+model NodeExecution {
+  id                 String               @id @default(uuid())
+  workflowExecutionId String
+  workflowExecution   WorkflowExecution    @relation(fields: [workflowExecutionId], references: [id])
+
+  nodeId             String
+  node               Node                 @relation(fields: [nodeId], references: [id])
+
+  status             NodeExecutionStatus
+  startedAt          DateTime?
+  completedAt        DateTime?
+  input              Json?
+  output             Json?
+  error              String?
+
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  @@index([workflowExecutionId])
+  @@index([nodeId])
+}
+
+enum Provider {
+  email
+  discord
+
+  gemini
+  openai
+  openrouter
+  
+  trigger
+  condition
+  delay
+}
+
+enum Status {
+  idle
+  running
+  completed
+  skipped
+}
+
+enum WorkflowStatus {
+  draft
+  active
+  paused
+  archived
+}
+
+enum TriggerType {
+  manual
+  webhook
+  schedule
+  event
+}
+
+enum ExecutionStatus {
+  running
+  completed
+  failed
+  cancelled
+}
+
+enum NodeExecutionStatus {
+  pending
+  running
+  completed
+  failed
+  skipped
+}
