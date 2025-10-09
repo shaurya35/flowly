@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { prisma } from "store";
+import type { Provider } from "store/generated/prisma";
 
 export const getAllNodes = async (req: Request, res: Response) => {
   try {
@@ -45,16 +46,41 @@ export const createNode = async (req: Request, res: Response) => {
       return res
         .status(400)
         .json({ message: "type and workflowId are required" });
+
+    // Validate provider type against enum used in Prisma schema
+    const allowedTypes = [
+      "email",
+      "discord",
+      "gemini",
+      "openai",
+      "openrouter",
+      "trigger",
+      "condition",
+      "delay",
+    ];
+    if (typeof type !== "string" || !allowedTypes.includes(type)) {
+      return res.status(400).json({ message: "invalid type" });
+    }
+
+    // Ensure workflow exists and belongs to the user
+    const workflow = await prisma.workflow.findFirst({ where: { id: workflowId, userId } });
+    if (!workflow) {
+      return res.status(404).json({ message: "workflow not found" });
+    }
+
+    // Provide safe defaults for JSON fields to avoid prisma errors
+    const safeConnections = typeof connections === "undefined" ? [] : connections;
+    const safeConfig = typeof config === "undefined" ? {} : config;
     const node = await prisma.node.create({
       data: {
         label,
         name,
         description,
-        type,
-        config,
+        type: type as Provider,
+        config: safeConfig,
         positionX,
         positionY,
-        connections,
+        connections: safeConnections,
         status,
         workflowId,
         userId,

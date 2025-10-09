@@ -20,9 +20,9 @@ export default function Sidebar() {
 
   const menuItems = [
     { id: 'projects', label: 'Projects', icon: FolderOpen },
-    { id: 'templates', label: 'Templates', icon: FileText },
-    { id: 'integrations', label: 'Integrations', icon: Plug },
-    { id: 'executions', label: 'Executions', icon: Zap },
+    // { id: 'templates', label: 'Templates', icon: FileText },
+    // { id: 'integrations', label: 'Integrations', icon: Plug },
+    // { id: 'executions', label: 'Executions', icon: Zap },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 

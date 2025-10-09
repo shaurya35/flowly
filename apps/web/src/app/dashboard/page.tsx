@@ -2,11 +2,11 @@
 
 import Canvas from "@/components/dashboard/Canvas"
 import Sidebar from "@/components/dashboard/Sidebar"
-import ProtectedRoute from "@/components/ProtectedRoute"
+// import ProtectedRoute from "@/components/ProtectedRoute"
 
 export default function Dashboard(){
     return (
-        <ProtectedRoute>
+        // <ProtectedRoute>
             <div className="flex h-screen bg-gray-100">
                 {/* Left Sidebar */}
                 <Sidebar />
@@ -19,6 +19,6 @@ export default function Dashboard(){
                     </div>
                 </div>
             </div>
-        </ProtectedRoute>
+        // </ProtectedRoute>
     )
 }
