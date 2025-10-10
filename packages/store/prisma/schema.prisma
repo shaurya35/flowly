@@ -23,8 +23,8 @@ model User {
 
 model Node {
   id            String        @id @default(uuid())
-  label         String?
-  name          String?
+  label         String
+  name          String
   description   String?
 
   type          Provider
@@ -52,7 +52,7 @@ model Node {
 
 model Workflow {
   id                 String              @id @default(uuid())
-  name               String?
+  name               String
   description        String?
 
   status             WorkflowStatus      @default(draft)
@@ -60,15 +60,9 @@ model Workflow {
   triggerConfig      Json?
   retryCount         Int                 @default(3)
   timeoutMs          Int                 @default(300000)
-  parallelExecution  Boolean             @default(false)
 
   userId             String
   user               User                @relation(fields: [userId], references: [id])
-
-  totalRuns          Int                 @default(0)
-  successfulRuns     Int                 @default(0)
-  failedRuns         Int                 @default(0)
-  lastRun            DateTime?
   
   nodes              Node[]
   executions         WorkflowExecution[]
@@ -120,16 +114,15 @@ model NodeExecution {
 }
 
 enum Provider {
+  trigger
+  text
+
   email
   discord
 
   gemini
   openai
   openrouter
-  
-  trigger
-  condition
-  delay
 }
 
 enum Status {
